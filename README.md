@@ -11,7 +11,7 @@
 - **something written like this** is a important, e.g **mind the gap**
 
 
-## Current flow of information
+## Flow of information
 
 **tl;dr**: user -> *frontend* -> *backend* -> *mercurius* -> *helios* -> data
 
@@ -60,6 +60,32 @@ When a user submits the search, the `searchParams` are encoded in [`postSearch`]
 ### *mercurius*
 
 **Change [`USER_PARAMS2MONGO`](https://github.com/eos-sns/mercurius/blob/master/mercurius/req/handlers.py#L21) to tell *mercurius* what are the `parameters`**
+
+
+## Data
+
+Use [hyperion](https://github.com/eos-sns/hyperion) to create and update the database: `$ hyperion -m <create/update> -c <configuration file>`, `$ hyperion -h #  for help`.
+
+### Introduction
+
+Hyperion is a [configuration](https://github.com/eos-sns/hyperion/blob/master/example_config.json)-based command-line tool that parses the command line arguments and, based on the folders given in the configuration, populates/updates the specified database.
+Each `.h5` file has a corresponding model in the database:
+- the meta-data (ALPHA_ESC, ALPHA_STAR, ALPHA_UVB ...) with which the `.h5` file is found in the database (the parameters are the ones the user requests in the *Download* page)
+- the file path
+
+The usual procedure hyperion follows when adding a new `.h5` file in the database is to get the meta-data of the file and inserting/updating the meta-data in the database.
+
+**It's important that that after the update/create phase, the original `.h5` files remain the specified folder, otherwise when later somebody will try to fetch them the path stored in MongoDB will be wrong.**
+
+### Create a database: `$ hyperion -m create`
+
+Database creation is done by calling the low-level MongoDB function `mongo_db.insert_one(model)` which simply inserts the model in the specified collection of a database.
+
+### Update the database: `$ hyperion -m update`
+
+Updating the database is a little bit different then the database creation. First hyperion tries to find out if the file already exists in the database:
+- if it exists, it updates the meta-data
+- if it doesn't exist, it creates a new model (meta-data + path) of the file
 
 
 ## Authors
